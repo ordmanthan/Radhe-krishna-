@@ -18,13 +18,13 @@ MONGO_DB_URI = getenv("mongodb+srv://ordmanthan:Mantsha@143@kayumusic.qi0ucva.mo
 
 # Vars For API End Pont.
 YTPROXY_URL = getenv("YTPROXY_URL", 'https://tgapi.xbitcode.com') ## xBit Music Endpoint.
-YT_API_KEY = getenv("YT_API_KEY" , None ) ## Your API key like: xbit_10000000xx0233 Get from  https://t.me/tgmusic_apibot
+YT_API_KEY = getenv("xbit_1913OGYSMC1JE53PZDIL01" , None ) ## Your API key like: xbit_10000000xx0233 Get from  https://t.me/tgmusic_apibot
 
 ## Other vaes
 DURATION_LIMIT_MIN = int(getenv("DURATION_LIMIT", 300))
 
 # Chat id of a group for logging bot's activities
-LOGGER_ID = int(getenv("LOGGER_ID"))
+LOGGER_ID = int(getenv("2726684656"))
 
 # Get this value from @FallenxBot on Telegram by /id
 OWNER_ID = int(getenv("1926064495"))
