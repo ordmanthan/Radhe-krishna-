@@ -28,8 +28,33 @@ from AnonXMusic.utils.formatters import get_readable_time
 from AnonXMusic.utils.inline import help_pannel, private_panel, start_panel
 from config import BANNED_USERS, LOGGER_ID
 from strings import get_string
+# ---------------- GROUP COUNTER STORAGE -----------------
+import os
 
+GROUP_FILE = "groups.txt"
 
+def read_groups():
+    if not os.path.exists(GROUP_FILE):
+        return set()
+    with open(GROUP_FILE, "r") as f:
+        return set(line.strip() for line in f if line.strip())
+
+def add_group(chat_id: int):
+    gid = str(chat_id)
+    groups = read_groups()
+    if gid not in groups:
+        with open(GROUP_FILE, "a") as f:
+            f.write(gid + "\n")
+
+def remove_group(chat_id: int):
+    gid = str(chat_id)
+    groups = read_groups()
+    if gid in groups:
+        groups.remove(gid)
+        with open(GROUP_FILE, "w") as f:
+            for g in groups:
+                f.write(g + "\n")
+# ---------------------------------------------------------
 @app.on_message(filters.command(["start"]) & filters.private & ~BANNED_USERS)
 @LanguageStart
 async def start_pm(client, message: Message, _):
