@@ -28,6 +28,7 @@ from AnonXMusic.utils.formatters import get_readable_time
 from AnonXMusic.utils.inline import help_pannel, private_panel, start_panel
 from config import BANNED_USERS, LOGGER_ID
 from strings import get_string
+
 # ---------------- GROUP COUNTER STORAGE -----------------
 import os
 
@@ -55,6 +56,8 @@ def remove_group(chat_id: int):
             for g in groups:
                 f.write(g + "\n")
 # ---------------------------------------------------------
+
+
 @app.on_message(filters.command(["start"]) & filters.private & ~BANNED_USERS)
 @LanguageStart
 async def start_pm(client, message: Message, _):
@@ -205,3 +208,124 @@ async def welcome(client, message: Message):
                 await message.stop_propagation()
         except Exception as ex:
             print(ex)
+
+# ========== Track when bot is added to a group ==========
+@app.on_message(filters.new_chat_members)
+async def track_group_join(client, message):
+    for m in message.new_chat_members:
+        if m.id == app.id:  
+            add_group(message.chat.id)￼Enterimport time
+import re
+import random
+import asyncio
+
+from pyrogram import filters
+from pyrogram.enums import ChatType
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from pyrogram.errors.exceptions.not_acceptable_406 import ChannelPrivate
+from pyrogram.errors.exceptions.flood_420 import SlowmodeWait
+from youtubesearchpython.__future__ import VideosSearch
+
+import config
+from AnonXMusic import app
+nonXMusic.misc import _boot_
+from AnonXMusic.plugins.sudo.sudoers import sudoers_list
+from AnonXMusic.utils.database import (
+    add_served_chat,
+    add_served_user,
+    blacklisted_chats,
+    get_lang,
+    is_banned_user,
+    is_on_off,
+    blacklist_chat,
+)
+from AnonXMusic.utils.decorators.language import LanguageStart
+from AnonXMusic.utils.formatters import get_readable_time
+from AnonXMusic.utils.inline import help_pannel, private_panel, start_panel
+from config import BANNED_USERS, LOGGER_ID
+from strings import get_string
+
+# ---------------- GROUP COUNTER STORAGE -----------------
+import os
+
+GROUP_FILE = "groups.txt"
+
+def read_groups():
+    if not os.path.exists(GROUP_FILE):
+        return set()
+    with open(GROUP_FILE, "r") as f:
+        return set(line.strip() for line in f if line.strip())
+
+def add_group(chat_id: int):
+    gid = str(chat_id)
+    groups = read_groups()
+    if gid not in groups:
+        with open(GROUP_FILE, "a") as f:
+            f.write(gid + "\n")
+
+def remove_group(chat_id: int):
+    gid = str(chat_id)
+    groups = read_groups()
+    if gid in groups:
+        groups.remove(gid)
+        with open(GROUP_FILE, "w") as f:
+            for g in groups:
+                f.write(g + "\n")
+# ---------------------------------------------------------
+
+
+@app.on_message(filters.command(["start"]) & filters.private & ~BANNED_USERS)
+@LanguageStart
+async def start_pm(client, message: Message, _):
+    await add_served_user(message.from_user.id)
+    if len(message.text.split()) > 1:
+        name = message.text.split(None, 1)[1]
+        if name[0:4] == "help":
+            keyboard = help_pannel(_)
+            await message.reply_sticker("CAACAgUAAx0CdQO5IgACMTplUFOpwDjf-UC7pqVt9uG659qxWQACfQkAAghYGFVtSkRZ5FZQXDME")
+            return await message.reply_photo(
+                photo=random.choice(config.START_IMG_URL),
+                caption=_["help_1"].format(config.SUPPORT_CHAT),
+                reply_markup=keyboard,
+            )
+        if name[0:3] == "sud":
+            await sudoers_list(client=client, message=message, _=_)
+            if await is_on_off(2):
+                return await app.send_message(
+                    chat_id=config.LOGGER_ID,
+                    text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>sᴜᴅᴏʟɪsᴛ</b>.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
+                )
+            return
+        if name[0:3] == "inf":
+            m = await message.reply_text("🔎")
+            query = (str(name)).replace("info_", "", 1)
+            query = f"https://www.youtube.com/watch?v={query}"
+            results = VideosSearch(query, limit=1)
+            for result in (await results.next())["result"]:
+                title = result["title"]
+                duration = result["duration"]
+                views = result["viewCount"]["short"]
+                thumbnail = result["thumbnails"][0]["url"].split("?")[0]
+                channellink = result["channel"]["link"]
+                channel = result["channel"]["name"]
+                link = result["link"]
+                published = result["publishedTime"]
+            searched_text = _["start_6"].format(
+                title, duration, views, published, channellink, channel, app.mention
+            )
+            key = InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(text=_["S_B_8"], url=link),
+                        InlineKeyboardButton(text=_["S_B_9"], url=config.SUPPORT_CHAT),
+                    ],
+                ]
+            )
+            await m.delete()
+            await app.send_photo(
+                chat_id=message.chat.id,
+                photo=thumbnail,
+                caption=searched_text,
+                reply_markup=key,
+            )
+            if await is_on_off(2):
